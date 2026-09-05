@@ -2,6 +2,7 @@
   "name": "turbine-week2",
   "version": "0.1.0",
   "private": true,
+  "type": "commonjs",
   "scripts": {
     "test": "anchor test",
     "lint:fix": "prettier -c --write \"tests/**/*.ts\""
