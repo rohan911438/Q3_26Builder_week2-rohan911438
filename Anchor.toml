@@ -7,6 +7,7 @@ skip-lint = false
 [programs.localnet]
 vault = "5ZFWibDvd5X2RnwPQeVGZ1WXpUCe89sUurDY8arpJjFA"
 escrow = "BChAgZDNqUcunsKRU1UD2jYCvxj1PQ7Sb93bMg53ar7t"
+share_vault = "8L1kYmbBfaneysWGZqDReecZiW2zF1yas2V2yfKosHo6"
 
 [registry]
 url = "https://api.apr.dev"

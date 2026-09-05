@@ -47,9 +47,13 @@ pub fn handle_make(
     seed: u64,
     deposit_amount: u64,
     receive_amount: u64,
+    deadline_duration: i64,
 ) -> Result<()> {
     require!(deposit_amount > 0, EscrowError::InvalidAmount);
     require!(receive_amount > 0, EscrowError::InvalidAmount);
+    require!(deadline_duration > 0, EscrowError::InvalidAmount);
+
+    let deadline = Clock::get()?.unix_timestamp + deadline_duration;
 
     let escrow = &mut ctx.accounts.escrow;
     escrow.seed = seed;
@@ -57,6 +61,7 @@ pub fn handle_make(
     escrow.mint_a = ctx.accounts.mint_a.key();
     escrow.mint_b = ctx.accounts.mint_b.key();
     escrow.receive_amount = receive_amount;
+    escrow.deadline = deadline;
     escrow.bump = ctx.bumps.escrow;
 
     let cpi_accounts = TransferChecked {
@@ -75,6 +80,7 @@ pub fn handle_make(
         mint_b: escrow.mint_b,
         deposit_amount,
         receive_amount,
+        deadline,
     });
 
     Ok(())

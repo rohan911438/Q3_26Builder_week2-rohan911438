@@ -21,8 +21,9 @@ pub mod escrow {
         seed: u64,
         deposit_amount: u64,
         receive_amount: u64,
+        deadline_duration: i64,
     ) -> Result<()> {
-        instructions::make::handle_make(ctx, seed, deposit_amount, receive_amount)
+        instructions::make::handle_make(ctx, seed, deposit_amount, receive_amount, deadline_duration)
     }
 
     pub fn take(ctx: Context<TakeEscrow>, seed: u64) -> Result<()> {
@@ -31,6 +32,10 @@ pub mod escrow {
 
     pub fn refund(ctx: Context<RefundEscrow>, seed: u64) -> Result<()> {
         instructions::refund::handle_refund(ctx, seed)
+    }
+
+    pub fn reclaim(ctx: Context<ReclaimEscrow>, seed: u64) -> Result<()> {
+        instructions::reclaim::handle_reclaim(ctx, seed)
     }
 
     pub fn update(

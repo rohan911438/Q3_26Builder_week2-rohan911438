@@ -29,6 +29,19 @@ describe("escrow", () => {
   const DECIMALS = 6;
   const DEPOSIT_AMOUNT = 1_000_000; // 1.0 token A
   const RECEIVE_AMOUNT = 2_000_000; // 2.0 token B
+  const DEFAULT_DEADLINE_DURATION = 3600; // 1 hour: plenty of headroom for the non-timed tests
+
+  // Only used to sanity-check the deadline `make` records. Actual expiry/reclaim
+  // behavior is tested in tests/escrow-timed.ts via bankrun's clock warping — see
+  // that file's header comment for why: this local validator's Clock sysvar can
+  // stall for tens of seconds under this environment's disk I/O load, which makes
+  // waiting on real wall-clock time for a short deadline unreliable here.
+  const getOnchainTime = async (): Promise<number> => {
+    const slot = await connection.getSlot();
+    const blockTime = await connection.getBlockTime(slot);
+    if (blockTime === null) throw new Error("failed to fetch on-chain block time");
+    return blockTime;
+  };
 
   let maker: Keypair;
   let taker: Keypair;
@@ -75,7 +88,7 @@ describe("escrow", () => {
     const vault = getAssociatedTokenAddressSync(mintA, escrow, true);
 
     await program.methods
-      .make(seed, new BN(DEPOSIT_AMOUNT), new BN(RECEIVE_AMOUNT))
+      .make(seed, new BN(DEPOSIT_AMOUNT), new BN(RECEIVE_AMOUNT), new BN(DEFAULT_DEADLINE_DURATION))
       .accounts({
         maker: maker.publicKey,
         mintA,
@@ -95,6 +108,13 @@ describe("escrow", () => {
     assert.strictEqual(escrowAccount.mintA.toBase58(), mintA.toBase58());
     assert.strictEqual(escrowAccount.mintB.toBase58(), mintB.toBase58());
     assert.strictEqual(escrowAccount.receiveAmount.toNumber(), RECEIVE_AMOUNT);
+
+    const onchainTime = await getOnchainTime();
+    assert.isAbove(escrowAccount.deadline.toNumber(), onchainTime);
+    assert.isAtMost(
+      escrowAccount.deadline.toNumber(),
+      onchainTime + DEFAULT_DEADLINE_DURATION + 60
+    );
 
     const vaultAccount = await getAccount(connection, vault);
     assert.strictEqual(Number(vaultAccount.amount), DEPOSIT_AMOUNT);
@@ -207,7 +227,7 @@ describe("escrow", () => {
     const vault = getAssociatedTokenAddressSync(mintA, escrow, true);
 
     await program.methods
-      .make(seed, new BN(DEPOSIT_AMOUNT), new BN(RECEIVE_AMOUNT))
+      .make(seed, new BN(DEPOSIT_AMOUNT), new BN(RECEIVE_AMOUNT), new BN(DEFAULT_DEADLINE_DURATION))
       .accounts({
         maker: maker.publicKey,
         mintA,
@@ -259,7 +279,7 @@ describe("escrow", () => {
     const makerAtaB = getAssociatedTokenAddressSync(mintB, maker.publicKey);
 
     await program.methods
-      .make(seed, new BN(DEPOSIT_AMOUNT), new BN(RECEIVE_AMOUNT))
+      .make(seed, new BN(DEPOSIT_AMOUNT), new BN(RECEIVE_AMOUNT), new BN(DEFAULT_DEADLINE_DURATION))
       .accounts({
         maker: maker.publicKey,
         mintA,
@@ -312,4 +332,5 @@ describe("escrow", () => {
       assert.include(String(err), "Error");
     }
   });
+
 });
