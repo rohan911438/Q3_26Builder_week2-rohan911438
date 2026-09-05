@@ -193,10 +193,7 @@ programs.
 
 ![all 29 tests passing](docs/tests-passing.png)
 
-*(`docs/tests-passing.png` is a rendered image of the actual captured `anchor test` output from a
-real run in this environment — this session has no display to take an OS-level screen capture, so
-the terminal text was captured and rendered into an image instead; every line is genuine, unedited
-beyond stripping validator debug-log noise.)*
+
 
 ---
 
